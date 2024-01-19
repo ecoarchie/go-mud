@@ -43,6 +43,17 @@ func (so *StaticObject) applyItemToStatObject(item *Item) string {
 	return ""
 }
 
+func (so *StaticObject) deleteItem(item *Item) {
+	for idx, itm := range so.items {
+		if itm.name == item.name {
+			so.items[idx] = so.items[len(so.items)-1]
+			so.items[len(so.items)-1] = nil
+			so.items = so.items[:len(so.items)-1]
+			break
+		}
+	}
+}
+
 func (so *StaticObject) isApplicable(item *Item) bool {
 	for _, itm := range so.applicableItems {
 		if itm.name == item.name {
@@ -60,9 +71,9 @@ func (d *Door) applyItemToDoor(item *Item) string {
 	case "ключи":
 		d.isClosed = !d.isClosed
 		if d.isClosed {
-			return "Дверь закрыта"
+			return "дверь закрыта"
 		}
-		return "Дверь открыта"
+		return "дверь открыта"
 	default:
 		return "нельзя применить"
 	}
@@ -79,7 +90,7 @@ func (i *StaticObject) getItems() string {
 			itemsString = itemsString + ", "
 		}
 	}
-	itemsString = itemsString + ". "
+	// itemsString = itemsString + ". "
 	return itemsString
 }
 

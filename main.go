@@ -16,7 +16,6 @@ func main() {
 	input := bufio.NewReader(os.Stdin)
 	for {
 		command, _ = input.ReadString('\n')
-		fmt.Printf("command is %s\n", command)
 		fmt.Println(handleCommand(command))
 	}
 }

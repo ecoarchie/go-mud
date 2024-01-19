@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -23,6 +22,7 @@ func newGame(player *Player, locations []*Location) *Game {
 			"надеть":      initInventory,
 			"взять":       pickItem,
 			"применить":   applyItem,
+			"посмотреть":  checkInventory,
 		},
 	}
 }
@@ -34,7 +34,7 @@ func initGame() {
 	kitchen := newLocation("кухня")
 	kitchen.lookAroundMessage = "ты находишься на кухне, "
 	kitchen.comeToMessage = "кухня, ничего интересного. "
-	tea := &Item{name: "чай", isInventoryItem: false}
+	tea := &Item{name: "чай", isInventoryItem: false, canBePutInto: "рюкзак"}
 	kitchen.staticObjs = []*StaticObject{
 		{
 			name:                  "стол",
@@ -46,9 +46,9 @@ func initGame() {
 	//room
 	room := newLocation("комната")
 	room.comeToMessage = "ты в своей комнате. "
-	keys := &Item{name: "ключи", isInventoryItem: false, canBeAppliedTo: "дверь"}
-	papers := &Item{name: "конспекты", isInventoryItem: false}
-	sack := &Item{name: "рюкзак", isInventoryItem: true}
+	keys := &Item{name: "ключи", isInventoryItem: false, canBeAppliedTo: "дверь", canBePutInto: "рюкзак"}
+	papers := &Item{name: "конспекты", isInventoryItem: false, canBePutInto: "рюкзак"}
+	sack := &Item{name: "рюкзак", isInventoryItem: true, canBePutInto: "рюкзак"}
 	room.staticObjs = []*StaticObject{
 		{
 			name:                  "стол",
@@ -108,14 +108,10 @@ func initGame() {
 func handleCommand(command string) string {
 	instructions := strings.Split(command, " ")
 	mainCommand := strings.TrimSpace(instructions[0])
-	fmt.Printf("команда %s\n", mainCommand)
 	options := instructions[1:]
-	fmt.Printf("опции %v\n", options)
-	fmt.Printf("game %+v\n", G.applicableCommands)
 	c, ok := G.applicableCommands[mainCommand]
 	if !ok {
 		return "неизвестная команда"
 	}
-	fmt.Printf("current location is %s\n", P.currentLocation.name)
 	return c(P, options)
 }

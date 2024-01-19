@@ -6,14 +6,15 @@ import (
 )
 
 type Player struct {
-	inventory       *Inventory
+	inventory       Inventory
 	currentLocation *Location
 	tasks           []string
 }
 
 func newPlayer(currentLocation *Location) *Player {
+	inventories := make(map[string][]*Item)
 	return &Player{
-		inventory:       nil,
+		inventory:       inventories,
 		currentLocation: currentLocation,
 	}
 }
@@ -29,31 +30,32 @@ func (p *Player) tasksMessage() string {
 			mes = mes + " и "
 		}
 	}
-	mes = mes + ". "
+	// mes = mes + ". "
 	return mes
 }
 
 var lookAround = func(p *Player, options []string) string {
-	fmt.Printf("двери - %+v\n", p.currentLocation.doors)
 	var message string
 	var staticObjsMessage string
 	tasksMessage := ""
+	itemsMes := []string{}
 	for _, so := range p.currentLocation.staticObjs {
-		itemsMes := so.getItems()
-		if itemsMes == "" {
+		if len(so.items) == 0 {
 			continue
 		}
-		staticObjsMessage = staticObjsMessage + itemsMes
+		itemsMes = append(itemsMes, so.getItems())
 	}
+	staticObjsMessage = staticObjsMessage + strings.Join(itemsMes, ", ")
+
 	if staticObjsMessage == "" {
-		staticObjsMessage = "пустая комната. "
+		staticObjsMessage = "пустая комната"
 	}
 	if p.currentLocation.name == "кухня" {
-		tasksMessage = p.tasksMessage()
+		tasksMessage = ", " + p.tasksMessage()
 	}
 	message = p.currentLocation.lookAroundMessage +
 		staticObjsMessage +
-		tasksMessage +
+		tasksMessage + ". " +
 		p.currentLocation.canGoToMessage()
 	return message
 }
@@ -79,15 +81,16 @@ var goTo = func(p *Player, options []string) string {
 }
 
 var initInventory = func(p *Player, options []string) string {
-	inventory := strings.TrimSpace(options[0])
+	inventoryName := strings.TrimSpace(options[0])
 	// items := p.currentLocation.listItems()
-	sack, err := p.currentLocation.findItemByName(inventory)
+	sack, so, err := p.currentLocation.findItemByName(inventoryName)
 	if err != nil {
 		return err.Error()
 	}
 	if sack.isInventoryItem {
-		p.inventory.items[inventory] = []*Item{}
-		return "вы надели: " + inventory
+		so.deleteItem(sack)
+		p.inventory[inventoryName] = []*Item{}
+		return "вы надели: " + inventoryName
 	}
 	return "нет инвентарного предмета"
 }
@@ -97,17 +100,38 @@ var pickItem = func(p *Player, options []string) string {
 	if p.inventory == nil {
 		return fmt.Sprintf("нет предмета в инвентаре - %s", itemName)
 	}
-	item, err := p.currentLocation.findItemByName(itemName)
+	item, staticObj, err := p.currentLocation.findItemByName(itemName)
 	if err != nil {
 		return err.Error()
 	}
-	_, ok := p.inventory.items[item.canBePutInto]
+	_, ok := p.inventory[item.canBePutInto]
 	if !ok {
 		return "некуда класть"
 	}
-	p.inventory.items[item.canBePutInto] = append(p.inventory.items[item.canBePutInto], item) 
+	staticObj.deleteItem(item)
+	p.inventory[item.canBePutInto] = append(p.inventory[item.canBePutInto], item)
+	if len(p.inventory["рюкзак"]) == 2 {
+		task, idx, err := p.getTaskByName("собрать рюкзак")
+		if err == nil {
+			p.deleteTask(task, idx)
+		}
+	}
 
 	return "предмет добавлен в инвентарь: " + itemName
+}
+
+func (p *Player) deleteTask(name string, idx int) {
+	p.tasks[idx] = p.tasks[len(p.tasks)-1]
+	p.tasks = p.tasks[:len(p.tasks)-1]
+}
+
+func (p *Player) getTaskByName(name string) (string, int, error) {
+	for idx, t := range p.tasks {
+		if t == name {
+			return t, idx, nil
+		}
+	}
+	return "", 0, fmt.Errorf("task not found")
 }
 
 var applyItem = func(p *Player, options []string) string {
@@ -139,4 +163,10 @@ var applyItem = func(p *Player, options []string) string {
 	// }
 	// return mes
 	return "не к чему применить"
+}
+
+func checkInventory(p *Player, options []string) string {
+	inventoryName := strings.TrimSpace(options[0])
+	items := p.inventory.getItems(inventoryName)
+	return items
 }

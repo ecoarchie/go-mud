@@ -6,7 +6,7 @@ type Item struct {
 	name            string
 	isInventoryItem bool
 	canBeAppliedTo  string
-	canBePutInto string
+	canBePutInto    string
 }
 
 func itemApplied(itemName string, itr Interactable) (string, error) {

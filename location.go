@@ -39,20 +39,16 @@ func (l *Location) listItems() []*Item {
 	return items
 }
 
-func (l *Location) findItemByName(name string) (*Item, error) {
+func (l *Location) findItemByName(name string) (*Item, *StaticObject, error) {
 	for _, so := range l.staticObjs {
-		for idx, item := range so.items {
+		for _, item := range so.items {
 			if item.name == name {
-				foundItem := item
-				so.items[idx] = so.items[len(so.items)-1]
-				so.items[len(so.items)-1] = nil
-				so.items = so.items[:len(so.items)-1]
-				fmt.Println(so.items)
-				return foundItem, nil
+				// foundItem := item
+				return item, so, nil
 			}
 		}
 	}
-	return nil, fmt.Errorf("нет такого")
+	return nil, nil, fmt.Errorf("нет такого")
 }
 
 func (l *Location) findStaticObjectByName(name string) (*StaticObject, error) {
