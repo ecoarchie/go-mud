@@ -1,4 +1,4 @@
-package main
+package entity
 
 import (
 	"fmt"
@@ -7,10 +7,10 @@ import (
 
 type Inventory map[string][]*Item
 
-func (i Inventory) findItemByName(name string) (*Item, error) {
+func (i Inventory) FindItemByName(name string) (*Item, error) {
 	for _, items := range i {
 		for _, item := range items {
-			if item.name == name {
+			if item.Name == name {
 				return item, nil
 			}
 		}
@@ -18,11 +18,11 @@ func (i Inventory) findItemByName(name string) (*Item, error) {
 	return nil, fmt.Errorf("нет предмета в инвентаре - %s", name)
 }
 
-func (i Inventory) getItems(name string) string {
+func (i Inventory) GetItems(name string) string {
 	items := i[name]
 	var mes []string
 	for _, item := range items {
-		mes = append(mes, item.name)
+		mes = append(mes, item.Name)
 	}
 	if len(mes) == 0 {
 		return fmt.Sprintf("%s пуст", name)

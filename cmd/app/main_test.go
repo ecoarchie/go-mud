@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/ecoarchie/go-mud/internal/app"
 )
 
 type gameCase struct {
@@ -55,9 +57,9 @@ var game0cases = [][]gameCase{
 
 func TestGame0(t *testing.T) {
 	for caseNum, commands := range game0cases {
-		initGame()
+		app.InitGame()
 		for _, item := range commands {
-			answer := handleCommand(item.command)
+			answer := app.HandleCommand(item.command)
 			if answer != item.answer {
 				t.Error("case:", caseNum, item.step,
 					"\n\tcmd:", item.command,

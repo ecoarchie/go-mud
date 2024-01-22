@@ -4,18 +4,17 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+
+	"github.com/ecoarchie/go-mud/internal/app"
 )
 
-var G = new(Game)
-var P = new(Player)
-
 func main() {
-	initGame()
+	app.InitGame()
 
 	var command string
 	input := bufio.NewReader(os.Stdin)
 	for {
 		command, _ = input.ReadString('\n')
-		fmt.Println(handleCommand(command))
+		fmt.Println(app.HandleCommand(command))
 	}
 }
